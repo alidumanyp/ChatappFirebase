@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "40472801628",
+    "project_id": "chatapp-f30dc",
+    "storage_bucket": "chatapp-f30dc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:40472801628:android:16e6b4845d72e7530ed199",
+        "android_client_info": {
+          "package_name": "com.aliduman.chatappfirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhGb2Uk0HHmhrB32t-0PqiNpL-BVnVDY8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
