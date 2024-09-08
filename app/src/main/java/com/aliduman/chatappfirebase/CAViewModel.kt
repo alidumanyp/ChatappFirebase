@@ -7,11 +7,13 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import com.aliduman.chatappfirebase.data.COLLECTION_CHATS
 import com.aliduman.chatappfirebase.data.COLLECTION_MESSAGES
+import com.aliduman.chatappfirebase.data.COLLECTION_STATUS
 import com.aliduman.chatappfirebase.data.COLLECTION_USERS
 import com.aliduman.chatappfirebase.data.ChatData
 import com.aliduman.chatappfirebase.data.ChatUser
 import com.aliduman.chatappfirebase.data.Event
 import com.aliduman.chatappfirebase.data.Message
+import com.aliduman.chatappfirebase.data.Status
 import com.aliduman.chatappfirebase.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
@@ -20,6 +22,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
@@ -46,6 +49,9 @@ class CAViewModel @Inject constructor(
     val chatMessages = mutableStateOf<List<Message>>(listOf())
     val inProgressMessages = mutableStateOf(false)
     private var currentChatMessagesListener: ListenerRegistration? = null
+
+    val status = mutableStateOf<List<Status>>(listOf())
+    val inProgressStatus = mutableStateOf(false)
 
 
     init {
@@ -173,6 +179,8 @@ class CAViewModel @Inject constructor(
                     this.userData.value = user
                     inProgress.value = false
                     populateChats()
+                    populateStatuses()
+                    createOrUpdateProfile()
                 }
             }
     }
@@ -346,6 +354,68 @@ class CAViewModel @Inject constructor(
     fun dePopulateChat() {
         chatMessages.value = listOf()
         currentChatMessagesListener?.remove()
+    }
+
+    private fun createStatus(imageUrl: String) {
+        val newStatus = Status(
+            user = ChatUser(
+                userId = userData.value?.userId,
+                name = userData.value?.name,
+                number = userData.value?.number,
+                imageUrl = userData.value?.imageUrl
+            ),
+            imageUrl = imageUrl,
+            timestamp = System.currentTimeMillis()
+        )
+        db.collection(COLLECTION_STATUS).document().set(newStatus)
+    }
+
+    fun uploadStatus(imageUri: Uri) {
+        uploadImage(imageUri) {
+            createStatus(imageUrl = it.toString())
+        }
+    }
+
+    private fun populateStatuses() {
+        inProgressStatus.value = true
+        val milliTimeDelta = 24L * 60 * 60 * 1000
+        val cutoff = System.currentTimeMillis() - milliTimeDelta
+
+        db.collection(COLLECTION_CHATS).where(
+            Filter.or(
+                Filter.equalTo("user1.userId", userData.value?.userId),
+                Filter.equalTo("user2.userId", userData.value?.userId)
+            )
+        )
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    handleException(error, "Cannot retrieve chats")
+                    return@addSnapshotListener
+                }
+                if (value != null) {
+                    val currentConnections = arrayListOf(userData.value?.userId)
+                    val chats = value.toObjects<ChatData>()
+                    chats.forEach { chat ->
+                        if (chat.user1.userId == userData.value?.userId) {
+                            currentConnections.add(chat.user2.userId)
+                        } else {
+                            currentConnections.add(chat.user1.userId)
+                        }
+                    }
+                    db.collection(COLLECTION_STATUS)
+                        .whereGreaterThan("timestamp", cutoff)
+                        .whereIn("user.userId", currentConnections)
+                        .addSnapshotListener { value, error ->
+                            if (error != null) {
+                                handleException(error, "Cannot retrieve statuses")
+                            }
+                            if (value != null) {
+                                status.value = value.toObjects()
+                            }
+                            inProgressStatus.value = false
+                        }
+                }
+            }
     }
 
 

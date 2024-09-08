@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
@@ -69,7 +70,7 @@ fun CheckSignedIn(vm: CAViewModel, navController: NavController) {
     val signedIn = vm.signedIn.value
     if (signedIn && !alreadySignedIn.value) {
         alreadySignedIn.value = true
-        navController.navigate(DestinationScreen.Profile.route) {
+        navController.navigate(DestinationScreen.ChatList.route) {
             popUpTo(0)
         }
     }
@@ -134,5 +135,17 @@ fun CommonRow(
         )
     }
 
+}
+
+@Composable
+fun TitleText(
+    text: String
+) {
+    Text(
+        text = text,
+        fontWeight = FontWeight.Bold,
+        fontSize = 35.sp,
+        modifier = Modifier.padding(8.dp)
+    )
 }
 

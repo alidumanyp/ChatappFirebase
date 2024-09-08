@@ -36,6 +36,7 @@ import com.aliduman.chatappfirebase.CAViewModel
 import com.aliduman.chatappfirebase.CommonProgressSpinner
 import com.aliduman.chatappfirebase.CommonRow
 import com.aliduman.chatappfirebase.DestinationScreen
+import com.aliduman.chatappfirebase.TitleText
 import com.aliduman.chatappfirebase.navigateTo
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -77,6 +78,8 @@ fun ChatListScreen(
                     .fillMaxSize()
                     .padding(padding),
             ) {
+                TitleText(text = "Chats")
+
                 if (chats.isEmpty()) {
                     Column(
                         modifier = Modifier
