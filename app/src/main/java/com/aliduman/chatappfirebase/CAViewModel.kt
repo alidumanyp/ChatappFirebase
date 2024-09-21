@@ -49,9 +49,12 @@ class CAViewModel @Inject constructor(
     val chatMessages = mutableStateOf<List<Message>>(listOf())
     val inProgressMessages = mutableStateOf(false)
     private var currentChatMessagesListener: ListenerRegistration? = null
+    private var chatListener: ListenerRegistration? = null
 
     val status = mutableStateOf<List<Status>>(listOf())
     val inProgressStatus = mutableStateOf(false)
+
+    private var currentStatusListener: ListenerRegistration? = null
 
 
     init {
@@ -61,31 +64,30 @@ class CAViewModel @Inject constructor(
         currentUser?.uid?.let { uid ->
             getUserData(uid)
         }
+        createOrUpdateProfile()
     }
 
     fun onLogin(email: String, password: String) {
-        debounceClick {
-            if (email.isBlank() || password.isBlank()) {
-                popupNotification.value = Event("Please enter all fields")
-                return@debounceClick
-            }
-            inProgress.value = true
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        signedIn.value = true
-                        inProgress.value = false
-                        auth.currentUser?.uid?.let { uid ->
-                            getUserData(uid)
-                        }
-                    } else {
-                        handleException(task.exception, "Login failed")
-                    }
-                }
-                .addOnFailureListener {
-                    handleException(it, "Login failed")
-                }
+        if (email.isBlank() || password.isBlank()) {
+            popupNotification.value = Event("Please enter all fields")
+            return
         }
+        inProgress.value = true
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    signedIn.value = true
+                    inProgress.value = false
+                    auth.currentUser?.uid?.let { uid ->
+                        getUserData(uid)
+                    }
+                } else {
+                    handleException(task.exception, "Login failed")
+                }
+            }
+            .addOnFailureListener {
+                handleException(it, "Login failed")
+            }
     }
 
     fun onSignUp(name: String, number: String, email: String, password: String) {
@@ -180,7 +182,6 @@ class CAViewModel @Inject constructor(
                     inProgress.value = false
                     populateChats()
                     populateStatuses()
-                    createOrUpdateProfile()
                 }
             }
     }
@@ -191,6 +192,17 @@ class CAViewModel @Inject constructor(
         userData.value = null
         popupNotification.value = Event("Logged out successfully")
         chats.value = listOf()
+        status.value = listOf()
+
+        // Clean up all listeners and in-progress state
+        inProgress.value = false
+        inProgressChats.value = false
+        inProgressMessages.value = false
+        inProgressStatus.value = false
+
+        chatListener?.remove()
+        currentStatusListener?.remove()
+        dePopulateChat()
     }
 
     private fun handleException(e: Exception? = null, customMessage: String = "") {
@@ -293,13 +305,14 @@ class CAViewModel @Inject constructor(
 
     private fun populateChats() {
         inProgressChats.value = true
-        db.collection(COLLECTION_CHATS)
+        chatListener = db.collection(COLLECTION_CHATS)
             .where(
                 Filter.or(
                     Filter.equalTo("user1.userId", userData.value?.userId),
                     Filter.equalTo("user2.userId", userData.value?.userId)
                 )
             )
+            .limit(50)
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     handleException(error, "Cannot retrieve chats")
@@ -310,14 +323,6 @@ class CAViewModel @Inject constructor(
                 }
                 inProgressChats.value = false
             }
-    }
-
-    fun debounceClick(minInterval: Long = 1000, onClick: () -> Unit) {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastClickTime >= minInterval) {
-            lastClickTime = currentTime
-            onClick()
-        }
     }
 
     fun onSendReply(chatId: String, message: String) {
@@ -381,7 +386,7 @@ class CAViewModel @Inject constructor(
         val milliTimeDelta = 24L * 60 * 60 * 1000
         val cutoff = System.currentTimeMillis() - milliTimeDelta
 
-        db.collection(COLLECTION_CHATS).where(
+        currentStatusListener = db.collection(COLLECTION_CHATS).where(
             Filter.or(
                 Filter.equalTo("user1.userId", userData.value?.userId),
                 Filter.equalTo("user2.userId", userData.value?.userId)
