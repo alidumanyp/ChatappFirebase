@@ -22,6 +22,6 @@ Firebase ve Jetpack Compose kullanarak geliştirilmiş modern bir sohbet uygulam
 
 ## Uygulama Ekran Görüntüleri
 
-| Login Ekranı | Profil Ekranı | Sohbet Ekranı |
-| --- | --- | --- |
-| ![Login](screenshots/login_ss.png) | ![Profil](screenshots/profile_ss.png) | ![Chatting](screenshots/chatting_ss.png) |
+| Login Ekranı | Profil Ekranı | Sohbet Ekranı | Kişiler (Contacts) Ekranı |
+| --- | --- | --- | --- |
+| ![Login](screenshots/login_ss.png) | ![Profil](screenshots/profile_ss.png) | ![Chatting](screenshots/chatting_ss.png) | ![Contacts](screenshots/contacts_ss.png) |
