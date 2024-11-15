@@ -30,4 +30,4 @@ A modern chat application developed using Firebase and Jetpack Compose, offering
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/ChatAppFirebase.git
+   git clone https://github.com/alidumanyp/ChatAppFirebase.git
