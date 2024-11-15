@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,6 +31,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -209,11 +211,18 @@ fun ProfileImage(imageUri: String?, vm: CAViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Card(
-                shape = CircleShape, modifier = Modifier
+                shape = CircleShape,
+                modifier = Modifier
                     .padding(8.dp)
-                    .size(100.dp)
+                    .size(100.dp),
+                elevation = CardDefaults.elevatedCardElevation(
+                    defaultElevation = 4.dp
+                )
             ) {
-                CommonImage(data = imageUri)
+                CommonImage(
+                    data = imageUri,
+                    contentScale = ContentScale.Crop // Use Crop to fill circle
+                )
             }
             Text(text = "Change profile picture")
         }
@@ -224,3 +233,4 @@ fun ProfileImage(imageUri: String?, vm: CAViewModel) {
         }
     }
 }
+
