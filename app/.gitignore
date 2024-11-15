@@ -1,1 +1,22 @@
-/build
+# Android specific files
+/local.properties
+/.gradle/
+/build/
+/.idea/
+/app/release/
+/app/debug/
+*.iml
+*.keystore
+
+# Firebase configuration
+google-services.json
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.backup
+
+# Environmental variables
+.env
